@@ -20,7 +20,7 @@ Each worktree gets:
 
 ```bash
 /plugin marketplace add gausejakub/claude-skills
-/plugin install laravel-worktrees
+/plugin install laravel-worktrees@gause-claude-skills
 ```
 
 Then run `/setup-worktrees` in your Laravel project.

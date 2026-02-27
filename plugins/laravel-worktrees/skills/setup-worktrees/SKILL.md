@@ -30,8 +30,8 @@ Add `.claude/worktrees/` to `.gitignore` if not already there.
 Full environment setup for a worktree. Takes a worktree path as argument. Must be idempotent (skip if `.worktree-ready` marker exists).
 
 Steps:
-1. Read `APP_URL` from the **main** worktree's `.env`. Strip the scheme (`https://` or `http://`) and any trailing path/port to get the bare hostname (e.g., `https://app-topol.test` → `app-topol.test`). This is the **base domain**. The **app name** is the hostname without the TLD (e.g., `app-topol`)
-2. Derive subdomain from the worktree folder name: `{folder}.{app-name}.test` (e.g., folder `feature-billing` + app name `app-topol` → `feature-billing.app-topol.test`)
+1. Read `APP_URL` from the **main** worktree's `.env`. Strip the scheme (`https://` or `http://`) and any trailing path/port to get the bare hostname (e.g., `https://myapp.test` → `myapp.test`). This is the **base domain**. The **app name** is the hostname without the TLD (e.g., `myapp`)
+2. Derive subdomain from the worktree folder name: `{folder}.{app-name}.test` (e.g., folder `feature-billing` + app name `myapp` → `feature-billing.myapp.test`)
 3. Copy `.env` from the main project if it doesn't exist in the worktree
 4. Set `APP_URL` to `https://{subdomain}.test`
 5. Set `APP_HOSTNAME` to `{subdomain}.test` (if the key exists in `.env`)
@@ -70,6 +70,8 @@ User-facing create command. Usage: `./claude-worktree.sh [branch-name]`
 
 Standalone cleanup. Takes a worktree path as argument. Reads the worktree's `.env` to determine what to clean up.
 
+**Safety guard:** Before dropping the database, verify that the given path is inside `.claude/worktrees/`. If it's not, refuse to run and print an error. This prevents accidentally dropping the main project's database.
+
 - Drop the worktree database based on `DB_CONNECTION` from the worktree's `.env`:
   - **mysql**: `mysql -u $DB_USERNAME -p$DB_PASSWORD -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS \`$DB_DATABASE\`"`
   - **pgsql**: `PGPASSWORD=$DB_PASSWORD dropdb -U $DB_USERNAME -h $DB_HOST -p $DB_PORT --if-exists $DB_DATABASE`
@@ -84,7 +86,7 @@ User-facing remove command. Usage: `./claude-worktree-remove.sh [name]`
 - If no argument, list available worktrees and exit
 - Run `cleanup-worktree.sh` on the worktree
 - Remove git worktree: `git worktree remove --force`
-- Delete the branch: `git branch -D`
+- Delete the branch: `git branch -d` (safe delete — will warn if the branch has unmerged changes; the user can force with `-D` themselves)
 
 ### Script 5: `ensure-worktree-setup.sh`
 

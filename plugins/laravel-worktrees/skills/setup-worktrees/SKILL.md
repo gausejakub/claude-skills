@@ -30,8 +30,8 @@ Add `.claude/worktrees/` to `.gitignore` if not already there.
 Full environment setup for a worktree. Takes a worktree path as argument. Must be idempotent (skip if `.worktree-ready` marker exists).
 
 Steps:
-1. Read `APP_URL` from the **main** worktree's `.env` to derive the base domain and app name
-2. Derive subdomain from the worktree folder name: `{folder}.{base-app-name}` → `{folder}.{base-app-name}.test`
+1. Read `APP_URL` from the **main** worktree's `.env`. Strip the scheme (`https://` or `http://`) and any trailing path/port to get the bare hostname (e.g., `https://app-topol.test` → `app-topol.test`). This is the **base domain**. The **app name** is the hostname without the TLD (e.g., `app-topol`)
+2. Derive subdomain from the worktree folder name: `{folder}.{app-name}.test` (e.g., folder `feature-billing` + app name `app-topol` → `feature-billing.app-topol.test`)
 3. Copy `.env` from the main project if it doesn't exist in the worktree
 4. Set `APP_URL` to `https://{subdomain}.test`
 5. Set `APP_HOSTNAME` to `{subdomain}.test` (if the key exists in `.env`)

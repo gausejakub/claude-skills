@@ -1,0 +1,5 @@
+{
+  "name": "laravel-worktrees",
+  "description": "Set up git worktrees for Laravel + Herd with isolated databases, domains, and Vite ports",
+  "version": "1.0.0"
+}

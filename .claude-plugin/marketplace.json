@@ -1,0 +1,11 @@
+{
+  "name": "gause-claude-skills",
+  "owner": { "name": "Jakub Gause" },
+  "plugins": [
+    {
+      "name": "laravel-worktrees",
+      "source": "./plugins/laravel-worktrees",
+      "description": "Git worktrees for Laravel + Herd with isolated databases, domains, and Vite ports"
+    }
+  ]
+}

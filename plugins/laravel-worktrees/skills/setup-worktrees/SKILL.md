@@ -11,10 +11,11 @@ You are setting up a git worktree system for a Laravel project served by Laravel
 ## Before You Start
 
 1. Confirm you are in the root of a Laravel project (check for `artisan`, `composer.json`)
-2. Confirm `.env` exists and has `APP_URL`, `DB_DATABASE`, `DB_USERNAME`, `DB_HOST`, `DB_PORT`
-3. Confirm Herd is available (`herd --version`)
-4. Confirm MySQL is running
-5. Detect the JS package manager from lockfile (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm)
+2. Confirm `.env` exists and has `APP_URL`, `DB_DATABASE`
+3. Detect the database driver from `DB_CONNECTION` in `.env` (default: `mysql`). Supported: `mysql`, `pgsql`, `sqlite`
+4. For `mysql`/`pgsql`: confirm the `.env` has `DB_USERNAME`, `DB_HOST`, `DB_PORT` and that the database server is reachable
+5. Confirm Herd is available (`herd --version`)
+6. Detect the JS package manager from lockfile (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm)
 
 If anything is missing, tell the user what they need and stop.
 
@@ -39,7 +40,10 @@ Steps:
 8. Install PHP dependencies: `composer install --no-interaction --quiet`
 9. Install JS dependencies using the detected package manager
 10. Generate application key: `php artisan key:generate --no-interaction --quiet`
-11. Create MySQL database: `CREATE DATABASE IF NOT EXISTS` using credentials from the worktree `.env`
+11. Create the worktree database based on `DB_CONNECTION`:
+    - **mysql**: `mysql -u $DB_USERNAME -p$DB_PASSWORD -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS \`$DB_DATABASE\`"`
+    - **pgsql**: `PGPASSWORD=$DB_PASSWORD createdb -U $DB_USERNAME -h $DB_HOST -p $DB_PORT $DB_DATABASE` (ignore error if it already exists)
+    - **sqlite**: set `DB_DATABASE` to the worktree's `database/database.sqlite` absolute path, then `touch` the file
 12. Run migrations: `php artisan migrate --seed --no-interaction --force`
 13. If Passport is installed, run `php artisan passport:install --no-interaction` (don't fail if not installed)
 14. Create storage link: `php artisan storage:link --no-interaction --force`
@@ -66,7 +70,10 @@ User-facing create command. Usage: `./claude-worktree.sh [branch-name]`
 
 Standalone cleanup. Takes a worktree path as argument. Reads the worktree's `.env` to determine what to clean up.
 
-- Drop MySQL database: `DROP DATABASE IF EXISTS`
+- Drop the worktree database based on `DB_CONNECTION` from the worktree's `.env`:
+  - **mysql**: `mysql -u $DB_USERNAME -p$DB_PASSWORD -h $DB_HOST -P $DB_PORT -e "DROP DATABASE IF EXISTS \`$DB_DATABASE\`"`
+  - **pgsql**: `PGPASSWORD=$DB_PASSWORD dropdb -U $DB_USERNAME -h $DB_HOST -p $DB_PORT --if-exists $DB_DATABASE`
+  - **sqlite**: `rm -f $DB_DATABASE`
 - Unsecure Herd: `herd unsecure {link-name}`
 - Unlink Herd: `herd unlink {link-name}`
 

@@ -9,12 +9,12 @@ A collection of Claude Code plugins by [Jakub Gause](https://gause.dev).
 Set up git worktrees for Laravel + Herd with isolated databases, domains, and Vite ports. One command to create a fully isolated environment, one command to tear it down.
 
 Each worktree gets:
-- Its own MySQL database
+- Its own database (MySQL, PostgreSQL, or SQLite)
 - Its own Laravel Herd domain with HTTPS
 - Its own Vite dev server port
 - Claude Code hooks for automatic setup/cleanup
 
-**Requirements:** Laravel project, Laravel Herd, MySQL, git
+**Requirements:** Laravel project, Laravel Herd, a database (MySQL, PostgreSQL, or SQLite), git
 
 ## Installation
 

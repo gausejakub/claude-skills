@@ -19,7 +19,7 @@ Each worktree gets:
 ## Installation
 
 ```bash
-/plugin marketplace add gause/claude-skills
+/plugin marketplace add gausejakub/claude-skills
 /plugin install laravel-worktrees
 ```
 

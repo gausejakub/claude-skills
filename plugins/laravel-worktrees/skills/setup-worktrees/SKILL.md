@@ -37,8 +37,13 @@ Steps:
 5. Set `APP_HOSTNAME` to `{subdomain}.test` (if the key exists in `.env`)
 6. Derive database name: `{base-app-name}_{folder_with_underscores}` and set `DB_DATABASE`
 7. Find a free Vite port in range 5100–5199 by checking other worktree `.env` files AND active listeners (`lsof`). Set `VITE_PORT`
-8. Install PHP dependencies: `composer install --no-interaction --quiet`
-9. Install JS dependencies using the detected package manager
+8. Copy PHP dependencies from main project using CoW (copy-on-write) for near-instant cloning:
+    - Detect platform: macOS uses `cp -cR` (APFS CoW), Linux uses `cp --reflink=auto -R`
+    - Copy `vendor/` from the main worktree to the new worktree using the appropriate CoW flag
+    - Then run `composer install --no-interaction --quiet` — this is near-instant since all packages are already present, but ensures `autoload` and any branch-specific deps are correct
+9. Copy JS dependencies from main project using CoW (same flag detection as step 8):
+    - Copy `node_modules/` from the main worktree to the new worktree using CoW
+    - Then run the detected package manager's install command — near-instant since all packages are present, but ensures lockfile consistency
 10. Generate application key: `php artisan key:generate --no-interaction --quiet`
 11. Create the worktree database based on `DB_CONNECTION`:
     - **mysql**: `mysql -u $DB_USERNAME -p$DB_PASSWORD -h $DB_HOST -P $DB_PORT -e "CREATE DATABASE IF NOT EXISTS \`$DB_DATABASE\`"`
@@ -150,3 +155,14 @@ This ONLY affects the development code path. If the project uses Laravel's built
 - Use `--no-interaction` on all Artisan commands
 - The setup script must be idempotent
 - After creating all scripts, show the user how to use them
+- For CoW copies, define a helper function in `setup-worktree.sh` that detects the platform and uses the right flag:
+  ```bash
+  cow_copy() {
+    if [[ "$(uname)" == "Darwin" ]]; then
+      cp -cR "$1" "$2"
+    else
+      cp --reflink=auto -R "$1" "$2"
+    fi
+  }
+  ```
+  If the CoW copy fails (e.g. filesystem doesn't support it), fall back to a regular `cp -R`
